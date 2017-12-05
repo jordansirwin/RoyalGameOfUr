@@ -5,17 +5,17 @@ using UnityEngine.UI;
 
 public class DiceResultText : MonoBehaviour {
 
-	private RollDice rollDice;
+	private GameStateMachine stateMachine;
 	private Text text;
 
 	// Use this for initialization
 	void Start () {
-		rollDice = GameObject.FindObjectOfType<RollDice> ();
+		stateMachine = GameObject.FindObjectOfType<GameStateMachine> ();
 		text = FindObjectOfType<Text> ();
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		text.text = "= " + rollDice.TotalRoll;
+		text.text = "= " + stateMachine.TotalRoll;
 	}
 }

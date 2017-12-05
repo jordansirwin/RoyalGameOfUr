@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TileController : MonoBehaviour {
+public class BoardTile : MonoBehaviour {
 
-	public TileController[] NextTiles;
+	public BoardTile[] NextTiles;
 
 	// Use this for initialization
 	void Start () {

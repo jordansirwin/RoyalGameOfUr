@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class StoneController : MonoBehaviour {
+public class PlayerStone : MonoBehaviour {
 
-	public TileController StartingTile;
+	public BoardTile StartingTile;
 
-	private TileController currentTile;
+	private BoardTile currentTile;
 
 
 	// Use this for initialization
@@ -23,7 +23,7 @@ public class StoneController : MonoBehaviour {
 	void OnMouseUp() {
 		Debug.Log ("Clicked!");
 
-		TileController nextTile;
+		BoardTile nextTile;
 		if (currentTile == null) {
 			nextTile = StartingTile;
 		} else {
