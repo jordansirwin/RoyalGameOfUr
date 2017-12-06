@@ -3,19 +3,21 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class DiceResultText : MonoBehaviour {
+public class TurnText : MonoBehaviour {
 
 	private GameStateMachine stateMachine;
-	private Text text;
+	private Text turnText;
+
+	private string[] humanizer = { "One", "Two" };
 
 	// Use this for initialization
 	void Start () {
 		stateMachine = GameObject.FindObjectOfType<GameStateMachine> ();
-		text = GetComponent<Text> ();
+		turnText = gameObject.GetComponent<Text>();
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		text.text = "= " + stateMachine.TotalRoll;
+		turnText.text = string.Format ("Player {0}'s Turn!", humanizer[stateMachine.PlayerTurn]);
 	}
 }

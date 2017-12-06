@@ -12,6 +12,8 @@ public class GameStateMachine : MonoBehaviour {
 
 	public GameStates GameState;
 	public int TotalRoll;
-	public int PlayerTurn;
+
+	public int TurnNumber;
+	public int PlayerTurn { get { return TurnNumber % 2; } }
 
 }

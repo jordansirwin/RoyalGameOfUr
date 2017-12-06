@@ -26,9 +26,9 @@ public class DiceRoller : MonoBehaviour {
 	public void RollTheDice() {
 
 		// If we're not ready to roll a dice, bail out
-		if (stateMachine.GameState != GameStateMachine.GameStates.RollTheDice) {
-			return;
-		}
+//		if (stateMachine.GameState != GameStateMachine.GameStates.RollTheDice) {
+//			return;
+//		}
 
 		// reset game state for the roll
 		stateMachine.TotalRoll = 0;
