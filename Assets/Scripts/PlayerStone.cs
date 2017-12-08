@@ -11,7 +11,7 @@ public class PlayerStone : MonoBehaviour {
 	private GameStateMachine gameState;
 	private float smoothTime = 0.25f;
 	private Vector3 velocity;
-	private BoardTile targetTile;
+	private Vector3? targetPosition;
 	private BoardTile[] moveQueue;
 
 	// Use this for initialization
@@ -20,34 +20,56 @@ public class PlayerStone : MonoBehaviour {
 	}
 
 	private int queueCounter;
+	private bool isMoving = false;
+
 	// Update is called once per frame
 	void Update () {
 
 		// if we're not going anywhere, exit
-		if (moveQueue == null) {
+		if (isMoving == false) {
 			return;
 		}
 
-		if (targetTile == null) {
-			if (moveQueue.Length > queueCounter) {
-				targetTile = moveQueue [queueCounter];
+		// need a target to move to
+		if (queueCounter < moveQueue.Length) {
+			targetPosition = moveQueue [queueCounter].transform.position;
+		}
+
+		// if we're moving we should be above the board
+		if (queueCounter == 0) {
+			var moveUp = targetPosition.Value.y + Vector3.up.y;
+			if (moveUp - transform.position.y >= 0.1f) {
+				Debug.Log ("Moving up");
+				transform.position = Vector3.SmoothDamp (transform.position, new Vector3 (transform.position.x, moveUp, transform.position.z), ref velocity, smoothTime);
+				return;
+			}
+		} 
+		// if at end of queue, move down on baord
+		else if (queueCounter >= moveQueue.Length) {
+			if ((targetPosition.Value - transform.position).magnitude >= 0.1f) {
+				Debug.Log ("Moving down");
+				transform.position = Vector3.SmoothDamp (transform.position, targetPosition.Value, ref velocity, smoothTime);
+				return;
 			} else {
-				queueCounter = 0;
-				moveQueue = null;
+				// end of queue, stop moving
+				Debug.Log ("Done moving");
+				isMoving = false;
 				return;
 			}
 		}
 
 		// move until we're close enough
-		if ((transform.position - targetTile.gameObject.transform.position).magnitude <= 0.1f) {
-			currentTile = targetTile;
-			targetTile = null;
-			queueCounter++;
+		var moveOver = new Vector3(targetPosition.Value.x, transform.position.y, targetPosition.Value.z);
+		if ((moveOver - transform.position).magnitude >= 0.1f) {
+			Debug.Log ("Moving over");
+			transform.position = Vector3.SmoothDamp(transform.position, moveOver, ref velocity, smoothTime);
 			return;
 		}
-
-		// keep moving
-		transform.position = Vector3.SmoothDamp(transform.position, targetTile.gameObject.transform.position, ref velocity, smoothTime);
+			
+		// target next tile in queue and keep moving!
+		Debug.Log("Next move tile in queue!");
+		currentTile = moveQueue[queueCounter];
+		queueCounter++;
 	}
 
 
@@ -62,6 +84,8 @@ public class PlayerStone : MonoBehaviour {
 		Debug.Log ("Clicked a stone");
 
 		GetMoveQueue (gameState.TotalRoll);
+		queueCounter = 0;
+		isMoving = true;
 	}
 
 	private BoardTile[] GetMoveQueue(int moveCount) {
