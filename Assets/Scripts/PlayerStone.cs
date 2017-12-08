@@ -12,25 +12,37 @@ public class PlayerStone : MonoBehaviour {
 	private float smoothTime = 0.25f;
 	private Vector3 velocity;
 	private BoardTile targetTile;
-
+	private BoardTile[] moveQueue;
 
 	// Use this for initialization
 	void Start () {
 		gameState = GameObject.FindObjectOfType<GameStateMachine> ();
 	}
-	
+
+	private int queueCounter;
 	// Update is called once per frame
 	void Update () {
 
 		// if we're not going anywhere, exit
-		if (targetTile == null) {
+		if (moveQueue == null) {
 			return;
+		}
+
+		if (targetTile == null) {
+			if (moveQueue.Length > queueCounter) {
+				targetTile = moveQueue [queueCounter];
+			} else {
+				queueCounter = 0;
+				moveQueue = null;
+				return;
+			}
 		}
 
 		// move until we're close enough
 		if ((transform.position - targetTile.gameObject.transform.position).magnitude <= 0.1f) {
 			currentTile = targetTile;
 			targetTile = null;
+			queueCounter++;
 			return;
 		}
 
@@ -49,38 +61,47 @@ public class PlayerStone : MonoBehaviour {
 
 		Debug.Log ("Clicked a stone");
 
-		targetTile = GetTargetTile (gameState.TotalRoll);
+		GetMoveQueue (gameState.TotalRoll);
 	}
 
-	private BoardTile GetTargetTile(int moveCount) {
+	private BoardTile[] GetMoveQueue(int moveCount) {
+		// initialize move queue
+		moveQueue = new BoardTile[moveCount];
+
 		if (moveCount == 0) {
 			Debug.Log ("Invalid move because 0 movecount");
 			return null;
 		}
 
-		BoardTile tile = currentTile;
+		// begin with tile we are on
+		var prevTile = currentTile;
+
+		// loop through the linked tiles until we build a list of them all or find invalid move
 		for (int i = 0; i < moveCount; i++) {
-			// if we are just starting, set to StartingTile and continue the loop
-			if (tile == null) {
-				tile = StartingTile;
+			// if we aren't on the board, begin with starting tile
+			if (prevTile == null) {
+				moveQueue [i] = StartingTile;
+				prevTile = moveQueue [i];
 				continue;
 			}
-			// if there aren't any remaining tiles, invalid move
-			else if (tile.NextTiles == null || tile.NextTiles.Length == 0) {
+
+			// if movement still left but no more tiles, illegal move
+			if (prevTile.NextTiles == null || prevTile.NextTiles.Length == 0) {
 				Debug.Log ("Invalid move because not enough tiles left");
 				return null;
 			}
 
-			// step through next tile
-			// normal paths without forks
-			if (tile.NextTiles.Length == 1) {
-				tile = tile.NextTiles [0];
+			// if next tile is single path
+			if (prevTile.NextTiles.Length == 1) {
+				moveQueue[i] = prevTile.NextTiles [0];
 			} else {
 				// choose the path that matches player turn (zero based so this works!)
-				tile = tile.NextTiles [gameState.PlayerTurn];
+				moveQueue[i] = prevTile.NextTiles [gameState.PlayerTurn];
 			}
+
+			prevTile = moveQueue [i];
 		}
 
-		return tile;
+		return moveQueue;
 	}
 }
