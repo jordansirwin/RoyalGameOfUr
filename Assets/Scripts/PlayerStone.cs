@@ -30,6 +30,11 @@ public class PlayerStone : MonoBehaviour {
 			return;
 		}
 
+		// movement should be like this:
+		// 1. move stone up above board
+		// 2. slide stone over each tile in movement
+		// 3. set stone down on tile
+
 		// need a target to move to
 		if (queueCounter < moveQueue.Length) {
 			targetPosition = moveQueue [queueCounter].transform.position;
@@ -37,6 +42,12 @@ public class PlayerStone : MonoBehaviour {
 
 		// if we're moving we should be above the board
 		if (queueCounter == 0) {
+
+			// remove stone from current tile since we're leaving it
+			if (currentTile != null) {
+				currentTile.CurrentStone = null;
+			}
+
 			var moveUp = targetPosition.Value.y + Vector3.up.y;
 			if (moveUp - transform.position.y >= 0.1f) {
 //				Debug.Log ("Moving up");
@@ -53,6 +64,7 @@ public class PlayerStone : MonoBehaviour {
 			} else {
 				// end of queue, stop moving
 //				Debug.Log ("Done moving");
+				currentTile.CurrentStone = this;
 				isMoving = false;
 				return;
 			}
@@ -72,8 +84,42 @@ public class PlayerStone : MonoBehaviour {
 		queueCounter++;
 	}
 
+	bool isValidTargetTile(BoardTile targetTile) {
+
+		// if no tile, false
+		if (targetTile == null) {
+			Debug.Log ("Invalid target tile");
+			return false;
+		}
+
+		// if tile without existing stone
+		if (targetTile.CurrentStone == null) {
+			return true;
+		}
+
+		// if tile has opponent player stone, return true (will bop stone later)
+		if (targetTile.CurrentStone.BelongsToPlayer != gameState.PlayerTurn) {
+			return true;
+		}
+
+		// if tile has current player stone, return false
+		if (targetTile.CurrentStone.BelongsToPlayer == gameState.PlayerTurn) {
+			Debug.Log ("You already have a stone on this tile");
+			return false;
+		}
+
+		// prolly invalid?
+		Debug.Log ("Invalid move due to default validation check");
+		return false;
+	}
+
 
 	void OnMouseUp() {
+
+		// only 1 thing at a time
+		if (isMoving == true) {
+			return;
+		}
 
 		// Make sure valid player clicks on valid stone
 		if (gameState.PlayerTurn != BelongsToPlayer) {
@@ -84,6 +130,16 @@ public class PlayerStone : MonoBehaviour {
 		Debug.Log ("Clicked a stone");
 
 		GetMoveQueue (gameState.TotalRoll);
+
+		var lastTileInMove = moveQueue == null || moveQueue.Length == 0 
+			? null 
+			: moveQueue [moveQueue.Length - 1];
+		if(isValidTargetTile(lastTileInMove) == false) {
+			moveQueue = null;
+			return;
+		}
+
+		// gtg for moving
 		queueCounter = 0;
 		isMoving = true;
 	}
