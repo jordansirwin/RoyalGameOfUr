@@ -39,7 +39,7 @@ public class PlayerStone : MonoBehaviour {
 		if (queueCounter == 0) {
 			var moveUp = targetPosition.Value.y + Vector3.up.y;
 			if (moveUp - transform.position.y >= 0.1f) {
-				Debug.Log ("Moving up");
+//				Debug.Log ("Moving up");
 				transform.position = Vector3.SmoothDamp (transform.position, new Vector3 (transform.position.x, moveUp, transform.position.z), ref velocity, smoothTime);
 				return;
 			}
@@ -47,12 +47,12 @@ public class PlayerStone : MonoBehaviour {
 		// if at end of queue, move down on baord
 		else if (queueCounter >= moveQueue.Length) {
 			if ((targetPosition.Value - transform.position).magnitude >= 0.1f) {
-				Debug.Log ("Moving down");
+//				Debug.Log ("Moving down");
 				transform.position = Vector3.SmoothDamp (transform.position, targetPosition.Value, ref velocity, smoothTime);
 				return;
 			} else {
 				// end of queue, stop moving
-				Debug.Log ("Done moving");
+//				Debug.Log ("Done moving");
 				isMoving = false;
 				return;
 			}
@@ -61,13 +61,13 @@ public class PlayerStone : MonoBehaviour {
 		// move until we're close enough
 		var moveOver = new Vector3(targetPosition.Value.x, transform.position.y, targetPosition.Value.z);
 		if ((moveOver - transform.position).magnitude >= 0.1f) {
-			Debug.Log ("Moving over");
+//			Debug.Log ("Moving over");
 			transform.position = Vector3.SmoothDamp(transform.position, moveOver, ref velocity, smoothTime);
 			return;
 		}
 			
 		// target next tile in queue and keep moving!
-		Debug.Log("Next move tile in queue!");
+//		Debug.Log("Next move tile in queue!");
 		currentTile = moveQueue[queueCounter];
 		queueCounter++;
 	}
