@@ -26,9 +26,10 @@ public class DiceRoller : MonoBehaviour {
 	public void RollTheDice() {
 
 		// If we're not ready to roll a dice, bail out
-//		if (stateMachine.GameState != GameStateMachine.GameStates.RollTheDice) {
-//			return;
-//		}
+		if (stateMachine.GameState != GameStateMachine.GameStates.RollTheDice) {
+			Debug.Log ("Invalid game state for rolling dice");
+			return;
+		}
 
 		// reset game state for the roll
 		stateMachine.TotalRoll = 0;
@@ -44,9 +45,18 @@ public class DiceRoller : MonoBehaviour {
 		// show some art of the dice roll
 		UpdateDiceArt ();
 
+		// a roll of zero means loss of turn
+		if (stateMachine.TotalRoll == 0) {
+			Debug.Log ("Roll of 0 means no valid moves available");
+			StartCoroutine (stateMachine.ShowInvalidMoveText());
+			stateMachine.NextTurn ();
+			return;
+		}
+
 		// set the next game state after a roll
-		stateMachine.GameState = GameStateMachine.GameStates.MoveAStone;
+		stateMachine.GameState = GameStateMachine.GameStates.SelectAStone;
 	}
+
 
 	private void UpdateDiceArt() {
 		var images = DiceContainer.GetComponentsInChildren<RawImage> ();

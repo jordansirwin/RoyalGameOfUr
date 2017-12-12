@@ -20,13 +20,14 @@ public class PlayerStone : MonoBehaviour {
 	}
 
 	private int queueCounter;
-	private bool isMoving = false;
+//	private bool isMoving = false;
 
 	// Update is called once per frame
 	void Update () {
 
 		// if we're not going anywhere, exit
-		if (isMoving == false) {
+		if (gameState.GameState != GameStateMachine.GameStates.MovingStone
+			|| moveQueue == null) {
 			return;
 		}
 
@@ -65,7 +66,11 @@ public class PlayerStone : MonoBehaviour {
 				// end of queue, stop moving
 //				Debug.Log ("Done moving");
 				currentTile.CurrentStone = this;
-				isMoving = false;
+				moveQueue = null;
+//				isMoving = false;
+
+				// set game state for next turn
+				gameState.NextTurn ();
 				return;
 			}
 		}
@@ -85,6 +90,8 @@ public class PlayerStone : MonoBehaviour {
 	}
 
 	bool isValidTargetTile(BoardTile targetTile) {
+
+		Debug.Log ("isValidTargetTile");
 
 		// if no tile, false
 		if (targetTile == null) {
@@ -116,8 +123,10 @@ public class PlayerStone : MonoBehaviour {
 
 	void OnMouseUp() {
 
+		Debug.Log ("OnMouseUp");
+
 		// only 1 thing at a time
-		if (isMoving == true) {
+		if (gameState.GameState != GameStateMachine.GameStates.SelectAStone) {
 			return;
 		}
 
@@ -129,7 +138,7 @@ public class PlayerStone : MonoBehaviour {
 
 		Debug.Log ("Clicked a stone");
 
-		GetMoveQueue (gameState.TotalRoll);
+		moveQueue = GetMoveQueue (gameState.TotalRoll);
 
 		var lastTileInMove = moveQueue == null || moveQueue.Length == 0 
 			? null 
@@ -140,13 +149,17 @@ public class PlayerStone : MonoBehaviour {
 		}
 
 		// gtg for moving
+		Debug.Log("Legal move let's go!");
 		queueCounter = 0;
-		isMoving = true;
+		gameState.GameState = GameStateMachine.GameStates.MovingStone;
+//		isMoving = true;
 	}
 
 	private BoardTile[] GetMoveQueue(int moveCount) {
+		Debug.Log ("GetMoveQueue");
+
 		// initialize move queue
-		moveQueue = new BoardTile[moveCount];
+		var queue = new BoardTile[moveCount];
 
 		if (moveCount == 0) {
 			Debug.Log ("Invalid move because 0 movecount");
@@ -160,8 +173,8 @@ public class PlayerStone : MonoBehaviour {
 		for (int i = 0; i < moveCount; i++) {
 			// if we aren't on the board, begin with starting tile
 			if (prevTile == null) {
-				moveQueue [i] = StartingTile;
-				prevTile = moveQueue [i];
+				queue [i] = StartingTile;
+				prevTile = queue [i];
 				continue;
 			}
 
@@ -173,15 +186,15 @@ public class PlayerStone : MonoBehaviour {
 
 			// if next tile is single path
 			if (prevTile.NextTiles.Length == 1) {
-				moveQueue[i] = prevTile.NextTiles [0];
+				queue[i] = prevTile.NextTiles [0];
 			} else {
 				// choose the path that matches player turn (zero based so this works!)
-				moveQueue[i] = prevTile.NextTiles [gameState.PlayerTurn];
+				queue[i] = prevTile.NextTiles [gameState.PlayerTurn];
 			}
 
-			prevTile = moveQueue [i];
+			prevTile = queue [i];
 		}
 
-		return moveQueue;
+		return queue;
 	}
 }
